@@ -7,10 +7,9 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cloudflare.com">
-    <!--<script src="https://jsdelivr.net"></script>-->
     <style>
         .tab-active { color: #ef4444 !important; border-top: 2px solid #ef4444; }
-        body { -webkit-tap-highlight-color: transparent; }
+        body { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
         .slide-in { animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -42,6 +41,10 @@
         <button onclick="router('water')" id="nav-water" class="flex flex-col items-center p-2 text-slate-400">
             <i class="fas fa-droplet text-lg"></i>
             <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Agua</span>
+        </button>
+        <button onclick="router('food')" id="nav-food" class="flex flex-col items-center p-2 text-slate-400">
+            <i class="fas fa-utensils text-lg"></i>
+            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Kcal</span>
         </button>
         <button onclick="router('calc')" id="nav-calc" class="flex flex-col items-center p-2 text-slate-400">
             <i class="fas fa-chart-line text-lg"></i>
