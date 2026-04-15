@@ -5,53 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VidaSana</title>
     <link rel="manifest" href="manifest.json">
-    <!-- Tailwind через Play CDN с оптимизацией -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cloudflare.com" media="print" onload="this.media='all'">
-    <style>
-        body { -webkit-tap-highlight-color: transparent; background: #f8fafc; }
-        .tab-active { color: #ef4444 !important; border-top: 2px solid #ef4444; }
-        /* Заглушка под рекламу */
-        .ad-slot { min-height: 100px; background: #f1f5f9; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-transform: uppercase; margin: 1rem 0; border: 1px dashed #cbd5e1; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <!-- Конфетти для "Excelente" -->
+    <script src="https://jsdelivr.net"></script>
 </head>
-<body class="pb-24">
-    <header class="p-4 flex justify-between items-center bg-white shadow-sm sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white"><i class="fas fa-heartbeat"></i></div>
-            <h1 class="text-xl font-black text-slate-800 tracking-tighter">VidaSana</h1>
+<body>
+    <header class="p-4 flex items-center justify-between bg-white shadow-sm sticky" style="top:0; z-index:50;">
+        <div class="flex items-center" style="gap:10px;">
+            <div style="background:#ef4444; width:35px; height:35px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white;">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <span style="font-weight:900; font-size:20px;">VidaSana</span>
         </div>
-        <div class="flex items-center gap-2">
-            <div class="bg-orange-50 px-3 py-1 rounded-full border border-orange-100 italic text-orange-600 font-bold text-sm"><span id="streak-val">0</span> 🔥</div>
-            <select id="lang-select" class="bg-slate-100 px-2 py-1 rounded-lg text-xs font-bold border-none outline-none">
+        <div class="flex items-center" style="gap:10px;">
+            <div style="background:#fff7ed; padding:5px 12px; border-radius:20px; border:1px solid #ffedd5; color:#ea580c; font-weight:bold;">
+                <span id="header-streak">0</span> 🔥
+            </div>
+            <select id="lang-select" style="border:none; background:#f1f5f9; padding:5px; border-radius:8px; font-weight:bold;">
                 <option value="es">ES</option>
                 <option value="pt">PT</option>
             </select>
         </div>
     </header>
 
-    <main id="app" class="p-4 max-w-md mx-auto"></main>
+    <main id="app" class="p-4" style="max-width:500px; margin:0 auto;"></main>
 
-    <!-- Рекламный слот внизу
-    <div id="bottom-ad" class="max-w-md mx-auto px-4">
-        <div class="ad-slot">Publicidad / Anúncio</div>
-    </div> -->
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50 shadow-2xl">
-        <button onclick="router('home')" id="nav-home" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-house text-lg"></i>
-            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Hoy</span>
+    <nav style="position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #f1f5f9; display:flex; justify-content:space-around; padding:10px; z-index:100;">
+        <button onclick="router('home')" id="nav-home" style="background:none; border:none; color:#94a3b8; display:flex; flex-direction:column; align-items:center;">
+            <i class="fas fa-house" style="font-size:20px;"></i>
+            <span style="font-size:10px; font-weight:bold; margin-top:4px;">HOY</span>
         </button>
-        <button onclick="router('water')" id="nav-water" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-droplet text-lg"></i>
-            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Agua</span>
+        <button onclick="router('water')" id="nav-water" style="background:none; border:none; color:#94a3b8; display:flex; flex-direction:column; align-items:center;">
+            <i class="fas fa-droplet" style="font-size:20px;"></i>
+            <span style="font-size:10px; font-weight:bold; margin-top:4px;">AGUA</span>
         </button>
-        <button onclick="router('calc')" id="nav-calc" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-calculator text-lg"></i>
-            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Salud</span>
+        <button onclick="router('calc')" id="nav-calc" style="background:none; border:none; color:#94a3b8; display:flex; flex-direction:column; align-items:center;">
+            <i class="fas fa-chart-line" style="font-size:20px;"></i>
+            <span style="font-size:10px; font-weight:bold; margin-top:4px;">SALUD</span>
         </button>
     </nav>
 
-    <script src="app.js" defer></script>
+    <script src="app.js"></script>
 </body>
 </html>
