@@ -21,14 +21,14 @@ const i18n = {
     }
 };
 
-let state = JSON.parse(localStorage.getItem('vidasana_v3')) || {
+let state = JSON.parse(localStorage.getItem('vidasana_v4')) || {
     lang: 'es', water: 0, streak: 0, lastVisit: null,
     habits: [false, false], user: { w: 70, h: 170 },
     lastCalc: null, weightHistory: []
 };
 
 let deferredPrompt = null;
-const save = () => localStorage.setItem('vidasana_v3', JSON.stringify(state));
+const save = () => localStorage.setItem('vidasana_v4', JSON.stringify(state));
 const getWaterTarget = () => Math.round((state.user.w || 70) * 35);
 
 function updateStreak() {
@@ -39,28 +39,22 @@ function updateStreak() {
         state.lastVisit = today; state.water = 0; state.habits = [false, false];
         save();
     }
-    document.getElementById('header-streak').innerText = state.streak;
+    const headerStr = document.getElementById('header-streak');
+    if (headerStr) headerStr.innerText = state.streak;
 }
 
 function router(page) {
     const app = document.getElementById('app');
     const t = i18n[state.lang];
-    
-    // Подсветка табов
     document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-    const activeBtn = document.getElementById(`nav-${page}`);
-    if(activeBtn) activeBtn.classList.add('tab-active');
+    const currentNav = document.getElementById(`nav-${page}`);
+    if (currentNav) currentNav.classList.add('tab-active');
 
     if (page === 'home') {
         const done = state.habits.filter(h => h).length;
-        // Важно: проверяем наличие deferredPrompt для кнопки PWA
-        const installBtnHtml = deferredPrompt 
-            ? `<button onclick="installApp()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mb-6"><i class="fas fa-download"></i> ${t.install_btn}</button>` 
-            : '';
-
         app.innerHTML = `
             <div class="space-y-6 slide-in">
-                ${installBtnHtml}
+                ${deferredPrompt ? `<button onclick="installApp()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mb-4"><i class="fas fa-download"></i> ${t.install_btn}</button>` : ''}
                 <div class="bg-gradient-to-br from-red-500 to-orange-500 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
                     <h2 class="opacity-80 text-xs font-black uppercase tracking-widest">${t.streak_desc}</h2>
                     <p class="text-6xl font-black mt-2">${state.streak} 🔥</p>
@@ -70,17 +64,14 @@ function router(page) {
                 </div>
                 <div class="space-y-3">
                     <h3 class="font-black text-slate-800 ml-2 uppercase text-xs tracking-widest">${t.habits_title}</h3>
-                    <div id="habits-container" class="space-y-3">
-                        ${renderHabit(0, t.h1, 'fa-apple-whole', 'text-green-500 bg-green-50')}
-                        ${renderHabit(1, t.h2, 'fa-running', 'text-blue-500 bg-blue-50')}
-                    </div>
+                    ${renderHabit(0, t.h1, 'fa-apple-whole', 'text-green-500 bg-green-50')}
+                    ${renderHabit(1, t.h2, 'fa-running', 'text-blue-500 bg-blue-50')}
                 </div>
-                <div id="congrats" class="text-center transition-all duration-500 ${done===2 ? 'opacity-100' : 'opacity-0'}">
+                <div id="congrats" class="text-center transition-all duration-500 ${done===2?'opacity-100':'opacity-0 pointer-events-none'}">
                     <p class="text-green-500 font-black animate-bounce">✨ ${t.congrats} ✨</p>
                 </div>
             </div>`;
     } else if (page === 'water') {
-        // ... (код воды остается без изменений)
         const target = getWaterTarget();
         app.innerHTML = `
             <div class="text-center py-6 space-y-8 slide-in">
@@ -99,17 +90,16 @@ function router(page) {
                 </div>
             </div>`;
     } else if (page === 'calc') {
-        // ... (код калькулятора остается без изменений)
         app.innerHTML = `
             <div class="space-y-6 slide-in">
                 <div id="chart-card" class="bg-white p-4 rounded-[2rem] shadow-sm hidden"><canvas id="wChart" height="150"></canvas></div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6 text-left">
                     <h2 class="text-2xl font-black text-slate-800 tracking-tight">${t.calc_title}</h2>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.weight}</label><input type="number" id="iw" value="${state.user.w}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100"></div>
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.height}</label><input type="number" id="ih" value="${state.user.h}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100"></div>
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.weight}</label><input type="number" id="iw" value="${state.user.w}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100 text-slate-800"></div>
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.height}</label><input type="number" id="ih" value="${state.user.h}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100 text-slate-800"></div>
                     </div>
-                    <button onclick="doCalc()" class="w-full bg-red-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase text-xs tracking-widest">${t.btn_calc}</button>
+                    <button onclick="doCalc()" class="w-full bg-red-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition">${t.btn_calc}</button>
                     <div id="res-box" class="${state.lastCalc?'':'hidden'}"></div>
                 </div>
             </div>`;
@@ -123,35 +113,34 @@ function router(page) {
 
 function renderHabit(i, name, icon, cls) {
     const done = state.habits[i];
-    // Добавлен pointer-events-auto чтобы гарантировать кликабельность
     return `
-        <div onclick="toggleHabit(${i})" class="flex items-center justify-between p-5 rounded-[1.5rem] border-2 ${done?'bg-green-50 border-green-200':'bg-white border-slate-100'} transition-all active:scale-95 cursor-pointer pointer-events-auto">
+        <div onclick="toggleHabit(${i})" class="flex items-center justify-between p-5 rounded-[1.5rem] border-2 ${done?'bg-green-50 border-green-200':'bg-white border-slate-100'} transition-all cursor-pointer active:scale-95 select-none">
             <div class="flex items-center gap-4 text-left pointer-events-none">
                 <div class="w-12 h-12 rounded-2xl ${cls} flex items-center justify-center text-xl shadow-inner"><i class="fas ${icon}"></i></div>
                 <span class="font-bold ${done?'text-slate-400 line-through':'text-slate-700'}">${name}</span>
             </div>
-            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white transition-all pointer-events-none"><i class="fas fa-check text-[10px]"></i></div>
+            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white pointer-events-none">
+                ${done ? '<i class="fas fa-check text-[10px]"></i>' : ''}
+            </div>
         </div>`;
 }
 
 function toggleHabit(i) {
     state.habits[i] = !state.habits[i];
     save();
-    
-    // Проверка на конфетти
     if (state.habits.filter(h => h).length === 2) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
     }
-    
-    // Перерисовываем экран Home
     router('home');
 }
 
-
 function addWater(ml) {
     state.water = Math.max(0, state.water + ml);
-    if (state.water >= getWaterTarget() && state.water - ml < getWaterTarget()) confetti({ particleCount: 150, colors:['#3b82f6','#60a5fa'] });
-    save(); router('water');
+    if (state.water >= getWaterTarget() && state.water - ml < getWaterTarget()) {
+        confetti({ particleCount: 150, colors: ['#3b82f6', '#60a5fa'] });
+    }
+    save();
+    router('water');
 }
 
 function doCalc() {
@@ -163,27 +152,30 @@ function doCalc() {
     }
     state.user = {w, h};
     state.lastCalc = { imc: (w/((h/100)**2)).toFixed(1), tdee: Math.round((10*w)+(6.25*h)-(5*25)+5) };
-    save(); router('calc');
+    save();
+    router('calc');
 }
 
 function showRes(res) {
     const box = document.getElementById('res-box'), t = i18n[state.lang];
     let cat = res.imc < 18.5 ? t.cat1 : res.imc < 25 ? t.cat2 : res.imc < 30 ? t.cat3 : t.cat4;
     box.innerHTML = `
-        <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 text-left">
+        <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 text-left slide-in">
             <div class="flex justify-between items-end"><span class="text-slate-500 text-[10px] font-black uppercase">${t.res_bmi}</span><span class="text-4xl font-black text-red-500">${res.imc}</span></div>
-            <p class="text-center font-bold text-slate-700 bg-white py-2 rounded-xl shadow-sm text-sm">${cat}</p>
+            <p class="text-center font-bold text-slate-700 bg-white py-2 rounded-xl shadow-sm text-sm border border-slate-100">${cat}</p>
             <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
                 <div><p class="text-[9px] font-black text-slate-400 uppercase">${t.res_tdee}</p><p class="text-lg font-black text-slate-800">${res.tdee} <small class="font-normal opacity-50">kcal</small></p></div>
                 <div><p class="text-[9px] font-black text-slate-400 uppercase">${t.water_title}</p><p class="text-lg font-black text-blue-600">${getWaterTarget()} <small class="font-normal opacity-50">ml</small></p></div>
             </div>
-            <button onclick="shareWA()" class="w-full bg-[#25D366] text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mt-2 active:scale-95 transition"><i class="fab fa-whatsapp"></i> ${t.share_btn}</button>
+            <button onclick="shareWA()" class="w-full bg-[#25D366] text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mt-2 active:scale-95 transition shadow-md">
+                <i class="fab fa-whatsapp"></i> ${t.share_btn}
+            </button>
         </div>`;
 }
 
 function shareWA() {
-    const t = `¡Mi IMC es ${state.lastCalc.imc} y mi meta es ${state.lastCalc.tdee} kcal! 🔥`;
-    window.open(`https://wa.me{encodeURIComponent(t)}`, '_blank');
+    const text = `¡Mi IMC es ${state.lastCalc.imc} y mi meta diaria es ${state.lastCalc.tdee} kcal! 🔥`;
+    window.open(`https://wa.me{encodeURIComponent(text)}`, '_blank');
 }
 
 function loadChartJS() {
@@ -201,13 +193,18 @@ function renderChart() {
         type: 'line',
         data: {
             labels: state.weightHistory.map(d => d.date),
-            datasets: [{ data: state.weightHistory.map(d => d.weight), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)', borderWidth: 3, fill: true, tension: 0.4 }]
+            datasets: [{ data: state.weightHistory.map(d => d.weight), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)', borderWidth: 3, fill: true, tension: 0.4, pointRadius: 4 }]
         },
-        options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } } } }
     });
 }
 
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; router('home'); });
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    router('home');
+});
+
 async function installApp() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -219,8 +216,12 @@ async function installApp() {
 document.addEventListener('DOMContentLoaded', () => {
     updateStreak();
     const sel = document.getElementById('lang-select');
-    sel.value = state.lang;
-    sel.onchange = (e) => { state.lang = e.target.value; save(); router('home'); };
+    if (sel) {
+        sel.value = state.lang;
+        sel.onchange = (e) => { state.lang = e.target.value; save(); router('home'); };
+    }
     router('home');
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
 });
