@@ -230,6 +230,7 @@ async function installApp() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('streak-val').innerText = state.streak;
     updateStreak();
     const sel = document.getElementById('lang-select');
     sel.value = state.lang;
