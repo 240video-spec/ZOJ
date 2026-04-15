@@ -174,22 +174,41 @@ function showRes(res) {
         </div>`;
 }
 
+// Функция ленивой загрузки скриптов
+function loadScript(url, callback) {
+    if (window.Chart) return callback(); // Если уже загружен
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = callback;
+    document.head.appendChild(script);
+}
+
 function renderChart() {
-    const ctx = document.getElementById('weightChart');
-    if (!ctx) return;
-    new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: state.weightHistory.map(d => d.date),
-            datasets: [{
-                data: state.weightHistory.map(d => d.weight),
-                borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)',
-                borderWidth: 3, fill: true, tension: 0.4, pointRadius: 4
-            }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } } } }
+    loadScript("https://jsdelivr.net", () => {
+        const ctx = document.getElementById('weightChart');
+        if (!ctx) return;
+        // ... (весь старый код отрисовки Chart.js)
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: state.weightHistory.map(d => d.date),
+                datasets: [{
+                    data: state.weightHistory.map(d => d.weight),
+                    borderColor: '#ef4444', 
+                    backgroundColor: 'rgba(239,68,68,0.05)',
+                    borderWidth: 3, fill: true, tension: 0.4, pointRadius: 4
+                }]
+            },
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }, 
+                scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } 
+            }
+        });
     });
 }
+
 
 function shareWA() {
     const res = state.lastCalc;

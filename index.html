@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VidaSana - Tu Guía Saludable</title>
+    <title>VidaSana</title>
     <link rel="manifest" href="manifest.json">
+    <!-- Tailwind через Play CDN с оптимизацией -->
     <script src="https://cdn.tailwindcss.com"></script>
-	<script src="https://jsdelivr.net"></script>
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <link rel="stylesheet" href="https://cloudflare.com" media="print" onload="this.media='all'">
     <style>
-        .slide-in { animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        body { -webkit-tap-highlight-color: transparent; background: #f8fafc; }
         .tab-active { color: #ef4444 !important; border-top: 2px solid #ef4444; }
-        body { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        /* Заглушка под рекламу */
+        .ad-slot { min-height: 100px; background: #f1f5f9; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; text-transform: uppercase; margin: 1rem 0; border: 1px dashed #cbd5e1; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-24 font-sans">
+<body class="pb-24">
     <header class="p-4 flex justify-between items-center bg-white shadow-sm sticky top-0 z-50">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white">
-                <i class="fas fa-heartbeat"></i>
-            </div>
+            <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white"><i class="fas fa-heartbeat"></i></div>
             <h1 class="text-xl font-black text-slate-800 tracking-tighter">VidaSana</h1>
         </div>
-        <div class="flex items-center gap-3">
-            <div class="bg-orange-100 px-3 py-1 rounded-full flex items-center border border-orange-200">
-                <span id="streak-val" class="font-bold text-orange-600 mr-1">0</span>
-                <span>🔥</span>
-            </div>
-            <select id="lang-select" class="bg-slate-100 px-2 py-1 rounded-lg text-xs font-bold outline-none border-none">
+        <div class="flex items-center gap-2">
+            <div class="bg-orange-50 px-3 py-1 rounded-full border border-orange-100 italic text-orange-600 font-bold text-sm"><span id="streak-val">0</span> 🔥</div>
+            <select id="lang-select" class="bg-slate-100 px-2 py-1 rounded-lg text-xs font-bold border-none outline-none">
                 <option value="es">ES</option>
                 <option value="pt">PT</option>
             </select>
@@ -37,21 +32,26 @@
 
     <main id="app" class="p-4 max-w-md mx-auto"></main>
 
+    <!-- Рекламный слот внизу -->
+    <div id="bottom-ad" class="max-w-md mx-auto px-4">
+        <div class="ad-slot">Publicidad / Anúncio</div>
+    </div>
+
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50 shadow-2xl">
         <button onclick="router('home')" id="nav-home" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-house text-xl"></i>
-            <span class="text-[10px] mt-1 font-bold uppercase tracking-widest" data-i18n="nav_home">Hoy</span>
+            <i class="fas fa-house text-lg"></i>
+            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Hoy</span>
         </button>
         <button onclick="router('water')" id="nav-water" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-droplet text-xl"></i>
-            <span class="text-[10px] mt-1 font-bold uppercase tracking-widest" data-i18n="nav_water">Agua</span>
+            <i class="fas fa-droplet text-lg"></i>
+            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Agua</span>
         </button>
         <button onclick="router('calc')" id="nav-calc" class="flex flex-col items-center p-2 text-slate-400">
-            <i class="fas fa-calculator text-xl"></i>
-            <span class="text-[10px] mt-1 font-bold uppercase tracking-widest" data-i18n="nav_calc">Salud</span>
+            <i class="fas fa-calculator text-lg"></i>
+            <span class="text-[9px] mt-1 font-bold uppercase tracking-widest">Salud</span>
         </button>
     </nav>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
