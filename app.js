@@ -45,14 +45,22 @@ function updateStreak() {
 function router(page) {
     const app = document.getElementById('app');
     const t = i18n[state.lang];
+    
+    // Подсветка табов
     document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-    document.getElementById(`nav-${page}`).classList.add('tab-active');
+    const activeBtn = document.getElementById(`nav-${page}`);
+    if(activeBtn) activeBtn.classList.add('tab-active');
 
     if (page === 'home') {
         const done = state.habits.filter(h => h).length;
+        // Важно: проверяем наличие deferredPrompt для кнопки PWA
+        const installBtnHtml = deferredPrompt 
+            ? `<button onclick="installApp()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mb-6"><i class="fas fa-download"></i> ${t.install_btn}</button>` 
+            : '';
+
         app.innerHTML = `
             <div class="space-y-6 slide-in">
-                ${deferredPrompt ? `<button onclick="installApp()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2"><i class="fas fa-download"></i> ${t.install_btn}</button>` : ''}
+                ${installBtnHtml}
                 <div class="bg-gradient-to-br from-red-500 to-orange-500 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
                     <h2 class="opacity-80 text-xs font-black uppercase tracking-widest">${t.streak_desc}</h2>
                     <p class="text-6xl font-black mt-2">${state.streak} 🔥</p>
@@ -62,14 +70,17 @@ function router(page) {
                 </div>
                 <div class="space-y-3">
                     <h3 class="font-black text-slate-800 ml-2 uppercase text-xs tracking-widest">${t.habits_title}</h3>
-                    ${renderHabit(0, t.h1, 'fa-apple-whole', 'text-green-500 bg-green-50')}
-                    ${renderHabit(1, t.h2, 'fa-running', 'text-blue-500 bg-blue-50')}
+                    <div id="habits-container" class="space-y-3">
+                        ${renderHabit(0, t.h1, 'fa-apple-whole', 'text-green-500 bg-green-50')}
+                        ${renderHabit(1, t.h2, 'fa-running', 'text-blue-500 bg-blue-50')}
+                    </div>
                 </div>
-                <div id="congrats" class="text-center transition-all ${done===2?'opacity-100':'opacity-0'}">
+                <div id="congrats" class="text-center transition-all duration-500 ${done===2 ? 'opacity-100' : 'opacity-0'}">
                     <p class="text-green-500 font-black animate-bounce">✨ ${t.congrats} ✨</p>
                 </div>
             </div>`;
     } else if (page === 'water') {
+        // ... (код воды остается без изменений)
         const target = getWaterTarget();
         app.innerHTML = `
             <div class="text-center py-6 space-y-8 slide-in">
@@ -82,20 +93,21 @@ function router(page) {
                 <div class="px-4 space-y-4">
                     <div class="flex gap-4">
                         <button onclick="addWater(250)" class="flex-1 bg-white border-2 border-blue-500 text-blue-600 p-5 rounded-3xl font-black active:scale-95 transition">+250</button>
-                        <button onclick="addWater(500)" class="flex-1 bg-blue-500 text-white p-5 rounded-3xl font-black shadow-lg shadow-blue-200 active:scale-95 transition">+500</button>
+                        <button onclick="addWater(500)" class="flex-1 bg-blue-500 text-white p-5 rounded-3xl font-black shadow-lg active:scale-95 transition">+500</button>
                     </div>
                     <button onclick="addWater(-250)" class="text-slate-300 font-bold text-[10px] uppercase tracking-widest underline">Remover -250ml</button>
                 </div>
             </div>`;
     } else if (page === 'calc') {
+        // ... (код калькулятора остается без изменений)
         app.innerHTML = `
             <div class="space-y-6 slide-in">
                 <div id="chart-card" class="bg-white p-4 rounded-[2rem] shadow-sm hidden"><canvas id="wChart" height="150"></canvas></div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6 text-left">
                     <h2 class="text-2xl font-black text-slate-800 tracking-tight">${t.calc_title}</h2>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.weight}</label><input type="number" id="iw" value="${state.user.w}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none"></div>
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.height}</label><input type="number" id="ih" value="${state.user.h}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none"></div>
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.weight}</label><input type="number" id="iw" value="${state.user.w}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100"></div>
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase ml-2">${t.height}</label><input type="number" id="ih" value="${state.user.h}" class="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-red-100"></div>
                     </div>
                     <button onclick="doCalc()" class="w-full bg-red-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase text-xs tracking-widest">${t.btn_calc}</button>
                     <div id="res-box" class="${state.lastCalc?'':'hidden'}"></div>
@@ -111,21 +123,30 @@ function router(page) {
 
 function renderHabit(i, name, icon, cls) {
     const done = state.habits[i];
+    // Добавлен pointer-events-auto чтобы гарантировать кликабельность
     return `
-        <div onclick="toggleHabit(${i})" class="flex items-center justify-between p-5 rounded-[1.5rem] border-2 ${done?'bg-green-50 border-green-200':'bg-white border-slate-100'} transition-all active:scale-95 cursor-pointer">
-            <div class="flex items-center gap-4 text-left">
+        <div onclick="toggleHabit(${i})" class="flex items-center justify-between p-5 rounded-[1.5rem] border-2 ${done?'bg-green-50 border-green-200':'bg-white border-slate-100'} transition-all active:scale-95 cursor-pointer pointer-events-auto">
+            <div class="flex items-center gap-4 text-left pointer-events-none">
                 <div class="w-12 h-12 rounded-2xl ${cls} flex items-center justify-center text-xl shadow-inner"><i class="fas ${icon}"></i></div>
                 <span class="font-bold ${done?'text-slate-400 line-through':'text-slate-700'}">${name}</span>
             </div>
-            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white transition-all"><i class="fas fa-check text-[10px]"></i></div>
+            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white transition-all pointer-events-none"><i class="fas fa-check text-[10px]"></i></div>
         </div>`;
 }
 
 function toggleHabit(i) {
     state.habits[i] = !state.habits[i];
-    if (state.habits.filter(h => h).length === 2) confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
-    save(); router('home');
+    save();
+    
+    // Проверка на конфетти
+    if (state.habits.filter(h => h).length === 2) {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
+    }
+    
+    // Перерисовываем экран Home
+    router('home');
 }
+
 
 function addWater(ml) {
     state.water = Math.max(0, state.water + ml);
