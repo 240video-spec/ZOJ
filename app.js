@@ -3,7 +3,7 @@ const i18n = {
         nav_home: "Hoy", nav_water: "Agua", nav_food: "Kcal", nav_calc: "Salud",
         streak_desc: "Días seguidos", habits_title: "Tareas de hoy",
         h1: "Comida Sana", h2: "Actividad", congrats: "¡Excelente!",
-        water_title: "Hidratación", water_personal: "Meta personal",
+        water_title: "Hidratación", meta_label: "Meta personal",
         calc_title: "Mi Perfil", weight: "Peso (kg)", height: "Altura (cm)",
         btn_calc: "Calcular", res_bmi: "Tu IMC", res_tdee: "Tu meta",
         share_btn: "Compartir WhatsApp", install_btn: "Instalar App",
@@ -16,7 +16,7 @@ const i18n = {
         nav_home: "Hoje", nav_water: "Água", nav_food: "Kcal", nav_calc: "Saúde",
         streak_desc: "Dias seguidos", habits_title: "Tarefas de hoje",
         h1: "Comida Saudável", h2: "Atividade", congrats: "Excelente!",
-        water_title: "Hidratação", water_personal: "Meta pessoal",
+        water_title: "Hidratação", meta_label: "Meta pessoal",
         calc_title: "Meu Perfil", weight: "Peso (kg)", height: "Altura (cm)",
         btn_calc: "Calcular", res_bmi: "Seu IMC", res_tdee: "Sua meta",
         share_btn: "Compartilhar WhatsApp", install_btn: "Instalar App",
@@ -27,14 +27,14 @@ const i18n = {
     }
 };
 
-let state = JSON.parse(localStorage.getItem('vidasana_final_v5')) || {
+let state = JSON.parse(localStorage.getItem('vidasana_vFinal_Full')) || {
     lang: 'es', water: 0, streak: 0, lastVisit: null,
     habits: [false, false], user: { w: 70, h: 170 },
     lastCalc: null, weightHistory: [], foodEaten: 0
 };
 
 let deferredPrompt = null;
-const save = () => localStorage.setItem('vidasana_final_v5', JSON.stringify(state));
+const save = () => localStorage.setItem('vidasana_vFinal_Full', JSON.stringify(state));
 const getWaterTarget = () => Math.round((state.user.w || 70) * 35);
 const getKcalTarget = () => state.lastCalc ? state.lastCalc.tdee : 2000;
 
@@ -57,15 +57,17 @@ function router(page) {
     const currentNav = document.getElementById(`nav-${page}`);
     if (currentNav) currentNav.classList.add('tab-active');
 
+    const needsCalc = !state.lastCalc;
+
     if (page === 'home') {
         const done = state.habits.filter(h => h).length;
         app.innerHTML = `
             <div class="space-y-6 slide-in">
                 ${deferredPrompt ? `<button onclick="installApp()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 mb-4"><i class="fas fa-download"></i> ${t.install_btn}</button>` : ''}
                 <div class="bg-gradient-to-br from-red-500 to-orange-500 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-                    <h2 class="opacity-80 text-xs font-black uppercase tracking-widest">${t.streak_desc}</h2>
-                    <p class="text-6xl font-black mt-2">${state.streak} 🔥</p>
-                    <div class="mt-6 bg-white/20 h-1.5 rounded-full overflow-hidden text-left">
+                    <h2 class="opacity-80 text-xs font-black uppercase tracking-widest text-left">${t.streak_desc}</h2>
+                    <p class="text-6xl font-black mt-2 text-left">${state.streak} 🔥</p>
+                    <div class="mt-6 bg-white/20 h-1.5 rounded-full overflow-hidden">
                         <div class="bg-white h-full transition-all duration-500" style="width: ${(done/2)*100}%"></div>
                     </div>
                 </div>
@@ -80,7 +82,6 @@ function router(page) {
             </div>`;
     } else if (page === 'water') {
         const target = getWaterTarget();
-        const needsCalc = !state.lastCalc;
         app.innerHTML = `
             <div class="text-center py-6 space-y-8 slide-in">
                 <h2 class="text-3xl font-black text-slate-800">${t.water_title}</h2>
@@ -93,7 +94,7 @@ function router(page) {
                     <button onclick="router('calc')" class="text-[10px] bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold uppercase animate-pulse">
                         ${t.personalize} <i class="fas fa-arrow-right ml-1"></i>
                     </button>
-                ` : `<p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${t.water_personal}</p>`}
+                ` : `<p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${t.meta_label}: ${target} ml</p>`}
                 <div class="flex gap-4 w-full px-4">
                     <button onclick="addWater(250)" class="flex-1 bg-white border-2 border-blue-500 text-blue-600 p-5 rounded-3xl font-black active:scale-95 transition">+250</button>
                     <button onclick="addWater(500)" class="flex-1 bg-blue-500 text-white p-5 rounded-3xl font-black shadow-lg active:scale-95 transition">+500</button>
@@ -102,7 +103,6 @@ function router(page) {
     } else if (page === 'food') {
         const target = getKcalTarget();
         const left = target - state.foodEaten;
-        const needsCalc = !state.lastCalc;
         app.innerHTML = `
             <div class="text-center py-6 space-y-8 slide-in">
                 <h2 class="text-3xl font-black text-slate-800">${t.food_title}</h2>
@@ -114,7 +114,7 @@ function router(page) {
                     <button onclick="router('calc')" class="text-[10px] bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold uppercase animate-pulse">
                         ${t.personalize} <i class="fas fa-arrow-right ml-1"></i>
                     </button>
-                ` : `<p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${t.water_personal}</p>`}
+                ` : `<p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">${t.meta_label}: ${target} kcal</p>`}
                 <div class="flex gap-2 px-4">
                     <input type="number" id="kcal-input" placeholder="200" class="flex-1 bg-white p-5 rounded-3xl font-bold border-2 border-slate-100 outline-none">
                     <button onclick="addFood()" class="bg-orange-500 text-white px-8 rounded-3xl font-black shadow-lg active:scale-95 transition">${t.food_add}</button>
