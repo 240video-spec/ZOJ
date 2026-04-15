@@ -7,7 +7,8 @@ const i18n = {
         calc_title: "Mi Perfil", weight: "Peso (kg)", height: "Altura (cm)",
         btn_calc: "Calcular", res_bmi: "Tu IMC", res_tdee: "Calorías",
         share_btn: "Compartir WhatsApp", install_btn: "Instalar App",
-        cat1: "Bajo peso", cat2: "Normal ✅", cat3: "Sobrepeso", cat4: "Obesidad"
+        cat1: "Bajo peso", cat2: "Normal ✅", cat3: "Sobrepeso", cat4: "Obesidad",
+        history_title: "Historial de peso"
     },
     pt: {
         nav_home: "Hoje", nav_water: "Água", nav_calc: "Saúde",
@@ -17,18 +18,19 @@ const i18n = {
         calc_title: "Meu Perfil", weight: "Peso (kg)", height: "Altura (cm)",
         btn_calc: "Calcular", res_bmi: "Seu IMC", res_tdee: "Calorias",
         share_btn: "Compartilhar WhatsApp", install_btn: "Instalar App",
-        cat1: "Abaixo do peso", cat2: "Normal ✅", cat3: "Sobrepeso", cat4: "Obesidade"
+        cat1: "Abaixo do peso", cat2: "Normal ✅", cat3: "Sobrepeso", cat4: "Obesidade",
+        history_title: "Histórico de peso"
     }
 };
 
-let state = JSON.parse(localStorage.getItem('vidasana_v4')) || {
+let state = JSON.parse(localStorage.getItem('vidasana_v5')) || {
     lang: 'es', water: 0, streak: 0, lastVisit: null,
     habits: [false, false], user: { w: 70, h: 170 },
     lastCalc: null, weightHistory: []
 };
 
 let deferredPrompt = null;
-const save = () => localStorage.setItem('vidasana_v4', JSON.stringify(state));
+const save = () => localStorage.setItem('vidasana_v5', JSON.stringify(state));
 const getWaterTarget = () => Math.round((state.user.w || 70) * 35);
 
 function updateStreak() {
@@ -92,7 +94,6 @@ function router(page) {
     } else if (page === 'calc') {
         app.innerHTML = `
             <div class="space-y-6 slide-in">
-                <div id="chart-card" class="bg-white p-4 rounded-[2rem] shadow-sm hidden"><canvas id="wChart" height="150"></canvas></div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6 text-left">
                     <h2 class="text-2xl font-black text-slate-800 tracking-tight">${t.calc_title}</h2>
                     <div class="grid grid-cols-2 gap-4">
@@ -102,12 +103,9 @@ function router(page) {
                     <button onclick="doCalc()" class="w-full bg-red-500 text-white p-5 rounded-2xl font-black shadow-lg uppercase text-xs tracking-widest active:scale-95 transition">${t.btn_calc}</button>
                     <div id="res-box" class="${state.lastCalc?'':'hidden'}"></div>
                 </div>
+                ${state.weightHistory.length > 0 ? renderHistoryList(t) : ''}
             </div>`;
         if (state.lastCalc) showRes(state.lastCalc);
-        if (state.weightHistory.length > 1) {
-            document.getElementById('chart-card').classList.remove('hidden');
-            loadChartJS();
-        }
     }
 }
 
@@ -119,8 +117,23 @@ function renderHabit(i, name, icon, cls) {
                 <div class="w-12 h-12 rounded-2xl ${cls} flex items-center justify-center text-xl shadow-inner"><i class="fas ${icon}"></i></div>
                 <span class="font-bold ${done?'text-slate-400 line-through':'text-slate-700'}">${name}</span>
             </div>
-            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white pointer-events-none">
+            <div class="w-8 h-8 rounded-full border-2 ${done?'bg-green-500 border-green-500':'border-slate-200'} flex items-center justify-center text-white pointer-events-none transition-all">
                 ${done ? '<i class="fas fa-check text-[10px]"></i>' : ''}
+            </div>
+        </div>`;
+}
+
+function renderHistoryList(t) {
+    return `
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 space-y-3">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">${t.history_title}</h3>
+            <div class="space-y-2">
+                ${state.weightHistory.slice().reverse().map(item => `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <span class="text-xs font-bold text-slate-500">${item.date}</span>
+                        <span class="font-black text-slate-800">${item.weight} kg</span>
+                    </div>
+                `).join('')}
             </div>
         </div>`;
 }
@@ -128,16 +141,14 @@ function renderHabit(i, name, icon, cls) {
 function toggleHabit(i) {
     state.habits[i] = !state.habits[i];
     save();
-    if (state.habits.filter(h => h).length === 2) {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.7 } });
-    }
+    if (state.habits.filter(h => h).length === 2) confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
     router('home');
 }
 
 function addWater(ml) {
     state.water = Math.max(0, state.water + ml);
     if (state.water >= getWaterTarget() && state.water - ml < getWaterTarget()) {
-        confetti({ particleCount: 150, colors: ['#3b82f6', '#60a5fa'] });
+        confetti({ particleCount: 100, colors: ['#3b82f6', '#60a5fa'] });
     }
     save();
     router('water');
@@ -146,10 +157,12 @@ function addWater(ml) {
 function doCalc() {
     const w = parseFloat(document.getElementById('iw').value), h = parseFloat(document.getElementById('ih').value);
     const today = new Date().toLocaleDateString(state.lang==='es'?'es-ES':'pt-BR', {day:'numeric', month:'short'});
+    
     if (state.weightHistory.length === 0 || state.weightHistory[state.weightHistory.length - 1].date !== today) {
         state.weightHistory.push({ date: today, weight: w });
-        if (state.weightHistory.length > 7) state.weightHistory.shift();
+        if (state.weightHistory.length > 5) state.weightHistory.shift();
     }
+    
     state.user = {w, h};
     state.lastCalc = { imc: (w/((h/100)**2)).toFixed(1), tdee: Math.round((10*w)+(6.25*h)-(5*25)+5) };
     save();
@@ -178,27 +191,6 @@ function shareWA() {
     window.open(`https://wa.me{encodeURIComponent(text)}`, '_blank');
 }
 
-function loadChartJS() {
-    if (window.Chart) return renderChart();
-    const s = document.createElement("script");
-    s.src = "https://jsdelivr.net";
-    s.onload = renderChart;
-    document.head.appendChild(s);
-}
-
-function renderChart() {
-    const ctx = document.getElementById('wChart');
-    if (!ctx) return;
-    new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: state.weightHistory.map(d => d.date),
-            datasets: [{ data: state.weightHistory.map(d => d.weight), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)', borderWidth: 3, fill: true, tension: 0.4, pointRadius: 4 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { font: { size: 9, weight: 'bold' } } } } }
-    });
-}
-
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -221,7 +213,5 @@ document.addEventListener('DOMContentLoaded', () => {
         sel.onchange = (e) => { state.lang = e.target.value; save(); router('home'); };
     }
     router('home');
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 });
