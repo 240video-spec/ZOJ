@@ -114,7 +114,7 @@ function router(page) {
                     <button onclick="router('calc')" class="text-[10px] bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold uppercase animate-pulse">
                         ${t.personalize} <i class="fas fa-arrow-right ml-1"></i>
                     </button>
-                ` : ''}
+                ` : `<p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${t.water_personal}</p>`}
                 <div class="flex gap-2 px-4">
                     <input type="number" id="kcal-input" placeholder="200" class="flex-1 bg-white p-5 rounded-3xl font-bold border-2 border-slate-100 outline-none">
                     <button onclick="addFood()" class="bg-orange-500 text-white px-8 rounded-3xl font-black shadow-lg active:scale-95 transition">${t.food_add}</button>
